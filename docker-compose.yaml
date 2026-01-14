@@ -1,0 +1,92 @@
+services:
+  users_db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: users_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  trips_db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: trips_db
+    volumes:
+      - trips_db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+  
+  broker1:
+    image: apache/kafka:3.7.0
+    hostname: broker1
+    container_name: kafka-broker-1
+    user: "0:0"
+    volumes:
+      - broker1_data:/var/lib/kafka/data
+      - broker1_controller:/var/lib/kafka/controller
+      - ./config/broker1.properties:/opt/kafka/config/kraft/server.properties:ro
+    environment:
+      KAFKA_CLUSTER_ID: Ce6wGJ0QS-yQs-NRd-zhNA
+    command: >
+      bash -c "
+      /opt/kafka/bin/kafka-storage.sh format --ignore-formatted -t $$KAFKA_CLUSTER_ID -c /opt/kafka/config/kraft/server.properties &&
+      /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/kraft/server.properties
+      "
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+
+  broker2:
+    image: apache/kafka:3.7.0
+    hostname: broker2
+    container_name: kafka-broker-2
+    user: "0:0"
+    volumes:
+      - broker2_data:/var/lib/kafka/data
+      - broker2_controller:/var/lib/kafka/controller
+      - ./config/broker2.properties:/opt/kafka/config/kraft/server.properties:ro
+    environment:
+      KAFKA_CLUSTER_ID: Ce6wGJ0QS-yQs-NRd-zhNA
+    command: >
+      bash -c "
+      /opt/kafka/bin/kafka-storage.sh format --ignore-formatted -t $$KAFKA_CLUSTER_ID -c /opt/kafka/config/kraft/server.properties &&
+      /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/kraft/server.properties
+      "
+    ports:
+      - "9094:9092"
+      - "9096:9093"
+
+  broker3:
+    image: apache/kafka:3.7.0
+    hostname: broker3
+    container_name: kafka-broker-3
+    user: "0:0"
+    volumes:
+      - broker3_data:/var/lib/kafka/data
+      - broker3_controller:/var/lib/kafka/controller
+      - ./config/broker3.properties:/opt/kafka/config/kraft/server.properties:ro
+    environment:
+      KAFKA_CLUSTER_ID: Ce6wGJ0QS-yQs-NRd-zhNA
+    command: >
+      bash -c "
+      /opt/kafka/bin/kafka-storage.sh format --ignore-formatted -t $$KAFKA_CLUSTER_ID -c /opt/kafka/config/kraft/server.properties &&
+      /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/kraft/server.properties
+      "
+    ports:
+      - "9095:9092"
+      - "9097:9093"
+
+volumes:
+  db_data:
+  trips_db_data:
+  broker1_data:
+  broker1_controller:
+  broker2_data:
+  broker2_controller:
+  broker3_data:
+  broker3_controller:

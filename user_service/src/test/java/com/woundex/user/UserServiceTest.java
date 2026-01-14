@@ -129,5 +129,5 @@ class UserServiceTest {
         assertThat(resp.getName()).isEqualTo(rider.getName());
         assertThat(resp.getEmail()).isEqualTo(rider.getEmail());
         assertThat(resp.getRole()).isEqualTo("RIDER");
-    }
+    }                                                                                                                                   
 }
