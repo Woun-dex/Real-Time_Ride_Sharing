@@ -1,0 +1,14 @@
+CREATE TABLE trips (
+    id UUID PRIMARY KEY,
+    rider_id UUID NOT NULL,
+    driver_id UUID,
+    status VARCHAR(20) NOT NULL,
+    pickup_lat DOUBLE PRECISION NOT NULL,
+    pickup_lng DOUBLE PRECISION NOT NULL,
+    destination_lat DOUBLE PRECISION NOT NULL,
+    destination_lng DOUBLE PRECISION NOT NULL,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    assigned_at TIMESTAMP WITHOUT TIME ZONE,
+    started_at TIMESTAMP WITHOUT TIME ZONE,
+    completed_at TIMESTAMP WITHOUT TIME ZONE
+);
