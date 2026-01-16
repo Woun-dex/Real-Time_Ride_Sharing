@@ -1,7 +1,12 @@
 package com.woundex.trip_service.domain.entities;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import com.woundex.trip_service.domain.events.*;
 import com.woundex.trip_service.domain.value_object.*;
 
 
@@ -13,6 +18,8 @@ public final class Trip_Entity {
     private Location destination;
     private TripStatus status;
 
+    private final List<Object> domainEvents = new ArrayList<>();
+
     private Trip_Entity(TripId id, RiderId riderId, Location pickup, Location destination, TripStatus status) {
         this.id = Objects.requireNonNull(id, "id");
         this.riderId = Objects.requireNonNull(riderId, "riderId");
@@ -23,27 +30,49 @@ public final class Trip_Entity {
     }
 
     public static Trip_Entity create(TripId id, RiderId riderId, Location pickup, Location destination) {
-        return new Trip_Entity(id, riderId, pickup, destination, TripStatus.REQUESTED);
+        var trip = new Trip_Entity(id, riderId, pickup, destination, TripStatus.REQUESTED);
+        trip.addEvent( new TripRequestedEvent(id, riderId, pickup, destination));
+        return trip;
     }
 
     public void assignDriver(DriverId driverId) {
         if (status != TripStatus.REQUESTED) throw new IllegalStateException("Trip not assignable");
         this.driverId = Objects.requireNonNull(driverId, "driverId");
         this.status = TripStatus.ASSIGNED;
+        addEvent( new DriverAssignedEvent(id, driverId));
     }
 
     public void start() {
         if (status != TripStatus.ASSIGNED) throw new IllegalStateException("Trip not started");
         if (driverId == null) throw new IllegalStateException("No driver assigned");
         this.status = TripStatus.IN_PROGRESS;
+        addEvent( new TripStartedEvent(id, driverId));
     }
 
     public void complete() {
         if (status != TripStatus.IN_PROGRESS) throw new IllegalStateException("Trip not completable");
         this.status = TripStatus.COMPLETED;
+        addEvent( new DriverCompletedEvent(id, driverId));
     }
 
-    // Getters
+    public void cancel() {
+        if (status == TripStatus.COMPLETED) throw new IllegalStateException("Trip not cancellable");
+        this.status = TripStatus.CANCELLED;
+        addEvent( new TripCancelledEvent(id));
+    }
+
+    private void addEvent(Object event){
+        domainEvents.add(event);
+    }
+    public List<Object> getDomainEvents() {
+        return Collections.unmodifiableList(domainEvents);
+    }
+
+    public void clearEvents() {
+        domainEvents.clear();
+    }
+
+    
     public TripId getId() { return id; }
     public RiderId getRiderId() { return riderId; }
     public Optional<DriverId> getDriverId() { return Optional.ofNullable(driverId); }
