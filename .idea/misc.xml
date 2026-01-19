@@ -5,6 +5,9 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/user_service/pom.xml" />
+        <option value="$PROJECT_DIR$/trip_service/pom.xml" />
+        <option value="$PROJECT_DIR$/ws-rider-service/pom.xml" />
+        <option value="$PROJECT_DIR$/ws-driver-service/pom.xml" />
       </list>
     </option>
   </component>

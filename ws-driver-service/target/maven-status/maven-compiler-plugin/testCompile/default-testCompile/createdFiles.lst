@@ -1,0 +1,9 @@
+com\woundex\ws_driver_service\application\handler\DriverGpsMessageHandlerTest.class
+com\woundex\ws_driver_service\messaging\kafka\DriverAvailabilityProducerTest.class
+com\woundex\ws_driver_service\application\handler\DriverAvailabilityHandlerTest.class
+com\woundex\ws_driver_service\messaging\kafka\DriverLocationProducerTest.class
+com\woundex\ws_driver_service\application\handler\TripEventHandlerTest.class
+com\woundex\ws_driver_service\messaging\kafka\TripEventConsumerTest.class
+com\woundex\ws_driver_service\WsDriverServiceApplicationTests.class
+com\woundex\ws_driver_service\messaging\websocket\DriverWebSocketHandlerTest.class
+com\woundex\ws_driver_service\messaging\websocket\SessionRegistryTest.class
