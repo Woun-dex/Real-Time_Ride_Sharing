@@ -1,12 +1,13 @@
-package main.java.com.woundex.location_service.infra.kafka;
+package com.woundex.location_service.infra.kafka;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.woundex.location_service.application.dto.DriverLocationDto;
-import com.woundex.location_service.application.port.IngestDriverLocationPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.woundex.location_service.application.dto.DriverLocationDto;
+import com.woundex.location_service.application.interfaces.IngestDriverLocation;
 
 @Component
 public class DriverLocationConsumer {

@@ -1,13 +1,13 @@
-package main.java.com.woundex.location_service.domain.service;
+package com.woundex.location_service.domain.service;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 
 import com.woundex.location_service.domain.model.DriverLocation;
 import com.woundex.location_service.domain.model.NearbyDriver;
 import com.woundex.location_service.domain.model.Position;
 import com.woundex.location_service.domain.repository.DriverLocationRepository;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Simple domain service that contains business rules for ingesting and querying locations.

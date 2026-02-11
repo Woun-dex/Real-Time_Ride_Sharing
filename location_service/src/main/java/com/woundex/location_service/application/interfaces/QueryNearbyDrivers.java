@@ -1,9 +1,10 @@
 package com.woundex.location_service.application.interfaces;
 
-import com.woundex.location_service.domain.model.NearbyDriver;
-
 import java.util.List;
 
+import com.woundex.location_service.domain.model.NearbyDriver;
+import com.woundex.location_service.domain.model.Position;
+
 public interface QueryNearbyDrivers {
-    List<NearbyDriver> findNearby(double lat, double lon, double radiusMeters, int limit);
+    List<NearbyDriver> findNearby(Position center, double radiusMeters, int limit);
 }

@@ -1,13 +1,14 @@
-package main.java.com.woundex.location_service.application.service;
-
-import com.woundex.location_service.application.dto.DriverLocationDto;
-import com.woundex.location_service.application.port.IngestDriverLocation;
-import com.woundex.location_service.domain.model.Position;
-import com.woundex.location_service.domain.service.LocationDomainService;
-import org.springframework.stereotype.Component;
+package com.woundex.location_service.application.service;
 
 import java.time.Instant;
 import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
+import com.woundex.location_service.application.dto.DriverLocationDto;
+import com.woundex.location_service.application.interfaces.IngestDriverLocation;
+import com.woundex.location_service.domain.model.Position;
+import com.woundex.location_service.domain.service.LocationDomainService;
 
 @Component
 public class IngestDriverLocationService implements IngestDriverLocation {

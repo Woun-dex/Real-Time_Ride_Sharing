@@ -1,12 +1,12 @@
-package main.java.com.woundex.location_service.domain.repository;
-
-import com.woundex.location_service.domain.model.DriverLocation;
-import com.woundex.location_service.domain.model.NearbyDriver;
-import com.woundex.location_service.domain.model.Position;
+package com.woundex.location_service.domain.repository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import com.woundex.location_service.domain.model.DriverLocation;
+import com.woundex.location_service.domain.model.NearbyDriver;
+import com.woundex.location_service.domain.model.Position;
 
 
 

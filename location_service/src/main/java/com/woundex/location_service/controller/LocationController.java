@@ -1,10 +1,16 @@
-
-import com.woundex.location_service.infrastructure.redis.RedisGeoService;
-import com.woundex.location_service.infrastructure.redis.RedisGeoService.NearbyDriver;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+package com.woundex.location_service.controller;
 
 import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.woundex.location_service.domain.model.NearbyDriver;
+import com.woundex.location_service.domain.model.Position;
+import com.woundex.location_service.infra.redis.RedisGeoService;
 
 @RestController
 @RequestMapping("/api/drivers")

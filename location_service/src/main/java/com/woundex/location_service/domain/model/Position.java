@@ -1,4 +1,4 @@
-package main.java.com.woundex.location_service.domain.model;
+package com.woundex.location_service.domain.model;
 
 public final class Position {
     private final double lat;

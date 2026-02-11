@@ -1,21 +1,32 @@
 package com.woundex.location_service.infra.redis;
 
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.data.geo.Circle;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResult;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Metrics;
+import org.springframework.data.geo.Point;
+import org.springframework.data.redis.connection.RedisGeoCommands;
+import org.springframework.data.redis.connection.RedisGeoCommands.GeoRadiusCommandArgs;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Component;
+
+import com.woundex.location_service.application.interfaces.QueryNearbyDrivers;
 import com.woundex.location_service.domain.model.DriverLocation;
 import com.woundex.location_service.domain.model.NearbyDriver;
 import com.woundex.location_service.domain.model.Position;
 import com.woundex.location_service.domain.repository.DriverLocationRepository;
-import com.woundex.location_service.application.port.QueryNearbyDriversPort;
-import org.springframework.data.geo.*;
-import org.springframework.data.redis.connection.RedisGeoCommands.GeoRadiusCommandArgs;
-import org.springframework.data.redis.core.*;
-import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.stereotype.Component;
-
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Redis adapter implementing domain repository and query port.
@@ -23,7 +34,7 @@ import java.util.stream.Collectors;
  * - Heartbeat key: driver:{id}:heartbeat (value = epoch millis) TTL 15s
  */
 @Component
-public class RedisGeoService implements DriverLocationRepository, QueryNearbyDriversPort {
+public class RedisGeoService implements DriverLocationRepository, QueryNearbyDrivers {
 
     private final StringRedisTemplate redis;
     private static final String GEO_KEY = "drivers:geo";
