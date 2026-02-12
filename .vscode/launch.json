@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "LocationServiceApplication",
+            "request": "launch",
+            "mainClass": "com.woundex.location_service.LocationServiceApplication",
+            "projectName": ""
+        },
+        {
+            "type": "java",
             "name": "Spring Boot-DriverServiceApplication<user>",
             "request": "launch",
             "cwd": "${workspaceFolder}",

@@ -6,9 +6,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
-/**
- * Kafka producer for driver location events.
- */
 @Component
 public class DriverLocationProducer implements EventPublisher {
 
