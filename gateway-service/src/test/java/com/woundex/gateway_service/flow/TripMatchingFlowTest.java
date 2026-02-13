@@ -12,23 +12,6 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * Flow 3 – Trip Request → Driver Matching → Assignment
- * <p>
- * End-to-end path:
- * <pre>
- * Rider POST /api/trips/request
- *   → Trip Service creates trip (REQUESTED)
- *   → Kafka: trip.requested
- *   → Matching Service consumes → queries Location Service for nearby drivers
- *   → Kafka: driver.requested
- *   → Driver notified via WebSocket
- *   → Driver POST /api/trips/{id}/accept
- *   → Trip status → ACCEPTED
- *   → Kafka: trip.accepted
- *   → Rider notified via WebSocket (driver info + ETA)
- * </pre>
- */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class TripMatchingFlowTest {

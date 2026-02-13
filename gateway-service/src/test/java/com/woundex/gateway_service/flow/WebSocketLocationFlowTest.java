@@ -11,26 +11,7 @@ import reactor.test.StepVerifier;
 import java.net.URI;
 import java.time.Duration;
 
-/**
- * Flow 2 – WebSocket Location Tracking
- * <p>
- * Validates that:
- * <ol>
- *   <li>A driver can open a WebSocket connection, send GPS coordinates,
- *       and receive ACK frames.</li>
- *   <li>A rider can subscribe to a trip-specific channel and receive
- *       real-time driver location updates.</li>
- * </ol>
- *
- * <h3>Data path</h3>
- * <pre>
- * Driver App  ──ws──▶  Gateway  ──route──▶  Location Service  ──▶  Redis
- *                                                │
- *                                          Kafka: driver.location
- *                                                │
- *                                          Rider WebSocket ◀──
- * </pre>
- */
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class WebSocketLocationFlowTest {

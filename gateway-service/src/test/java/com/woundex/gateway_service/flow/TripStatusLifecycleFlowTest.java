@@ -1,25 +1,15 @@
 package com.woundex.gateway_service.flow;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-/**
- * Flow 4 – Trip Status Lifecycle (Event-Driven)
- * <p>
- * Each status transition publishes a Kafka event that downstream services
- * (Notification Service, Payment Service) react to.
- *
- * <h3>Valid state machine</h3>
- * <pre>
- * REQUESTED → MATCHED → ACCEPTED → DRIVER_EN_ROUTE → ARRIVED
- *      ↓                                                  ↓
- *  (timeout)                                        IN_PROGRESS → COMPLETED
- *      ↓                                                              ↓
- *  CANCELLED                                               PAYMENT_PROCESSED
- * </pre>
- */
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class TripStatusLifecycleFlowTest {

@@ -16,6 +16,16 @@
             "projectName": "user",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-LocationServiceApplication<com.woundex-location_service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.woundex.location_service.LocationServiceApplication",
+            "projectName": "com.woundex-location_service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }
