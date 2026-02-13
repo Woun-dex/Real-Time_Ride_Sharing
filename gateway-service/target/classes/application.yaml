@@ -1,0 +1,161 @@
+ server:
+  port: 8090
+
+spring:
+  application:
+    name: gateway-service
+
+  # Redis for rate limiting
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  cloud:
+    gateway:
+      # ── Global defaults ──
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
+
+      # ── HTTP Routes ──
+      routes:
+        # ── User Service ──
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: userServiceCB
+                fallbackUri: forward:/fallback/user-service
+
+        # ── Trip Service ──
+        - id: trip-service
+          uri: lb://trip-service
+          predicates:
+            - Path=/api/trips/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: tripServiceCB
+                fallbackUri: forward:/fallback/trip-service
+
+        # ── Location Service ──
+        - id: location-service
+          uri: lb://location-service
+          predicates:
+            - Path=/api/locations/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: locationServiceCB
+                fallbackUri: forward:/fallback/location-service
+
+        # ── Matching Service ──
+        - id: matching-service
+          uri: lb://matching-service
+          predicates:
+            - Path=/api/matching/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: matchingServiceCB
+                fallbackUri: forward:/fallback/matching-service
+
+        # ── WebSocket: Rider ──
+        - id: ws-rider-service
+          uri: lb:ws://ws-rider-service
+          predicates:
+            - Path=/ws/rider/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: wsRiderCB
+                fallbackUri: forward:/fallback/ws-rider-service
+
+        # ── WebSocket: Driver ──
+        - id: ws-driver-service
+          uri: lb:ws://ws-driver-service
+          predicates:
+            - Path=/ws/driver/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: wsDriverCB
+                fallbackUri: forward:/fallback/ws-driver-service
+
+      # ── Global CORS ──
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+
+# ── Eureka ──
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+# ── Resilience4j Circuit Breakers ──
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+    instances:
+      userServiceCB:
+        baseConfig: default
+      tripServiceCB:
+        baseConfig: default
+      locationServiceCB:
+        baseConfig: default
+      matchingServiceCB:
+        baseConfig: default
+      wsRiderCB:
+        baseConfig: default
+      wsDriverCB:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
+
+# ── Actuator ──
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+# ── Logging ──
+logging:
+  level:
+    root: INFO
+    com.woundex: DEBUG
+    org.springframework.cloud.gateway: DEBUG
