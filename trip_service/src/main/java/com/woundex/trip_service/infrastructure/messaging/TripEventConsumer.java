@@ -36,7 +36,7 @@ public class TripEventConsumer {
             // 2. Create domain command
             AssignDriverCommand command = new AssignDriverCommand(
                 new TripId(event.tripId()),
-                new DriverId(event.driverId())
+                DriverId.of(java.util.UUID.fromString(event.driverId()))
             );
             
             // 3. Execute the command (updates trip status to ASSIGNED)
@@ -54,7 +54,7 @@ public class TripEventConsumer {
     } 
     
 
-    @KafkaListener(topics = "rider.location.updated", groupId = "trip-service")
+    @KafkaListener(topics = "rider-locations", groupId = "trip-service")
     public void onRiderLocationUpdate(String message) {
         log.info("Received rider location update: {}", message);
         // Update Redis with rider location

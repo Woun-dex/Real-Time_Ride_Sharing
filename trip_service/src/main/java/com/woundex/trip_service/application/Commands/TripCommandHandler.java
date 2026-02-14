@@ -41,7 +41,7 @@ public class TripCommandHandler {
 
     @Transactional
     public void handle(AssignDriverCommand cmd) {
-        Trip_Entity trip = tripRepository.findById(cmd.tripId())
+        Trip_Entity trip = tripRepository.findById(cmd.tripId().value())
             .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
     
         trip.assignDriver(cmd.driverId());
@@ -53,7 +53,7 @@ public class TripCommandHandler {
 
      @Transactional
     public void handle(StartTripCommand cmd) {
-        Trip_Entity trip = tripRepository.findById(cmd.tripId())
+        Trip_Entity trip = tripRepository.findById(cmd.tripId().value())
             .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
         
         if (!trip.getDriverId().map(d -> d.equals(cmd.driverId())).orElse(false)) {
@@ -69,7 +69,7 @@ public class TripCommandHandler {
 
     @Transactional
     public void handle(CompleteTripCommand cmd) {
-        Trip_Entity trip = tripRepository.findById(cmd.tripId())
+        Trip_Entity trip = tripRepository.findById(cmd.tripId().value())
             .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
         
         trip.complete();
@@ -81,7 +81,7 @@ public class TripCommandHandler {
 
      @Transactional
     public void handle(CancelTripCommand cmd) {
-        Trip_Entity trip = tripRepository.findById(cmd.tripId())
+        Trip_Entity trip = tripRepository.findById(cmd.tripId().value())
             .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
         
         trip.cancel();

@@ -14,6 +14,9 @@ import com.woundex.ws_rider_service.domain.Event.RiderLocationUpdatedEvent;
 
 import com.woundex.ws_rider_service.application.port.EventPublisher;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class RiderGpsMessageHandler {
 
     private final EventPublisher publisher;

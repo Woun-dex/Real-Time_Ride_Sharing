@@ -25,8 +25,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public NewTopic tripCompletedTopic() {
-        return TopicBuilder.name("trip.completed")
+    public NewTopic driverCompletedTopic() {
+        return TopicBuilder.name("driver.completed")
             .partitions(3)
             .replicas(1)
             .build();
@@ -35,6 +35,14 @@ public class KafkaConfig {
     @Bean
     public NewTopic tripCancelledTopic() {
         return TopicBuilder.name("trip.cancelled")
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
+
+    @Bean
+    public NewTopic driverAssignedTopic() {
+        return TopicBuilder.name("driver.assigned")
             .partitions(3)
             .replicas(1)
             .build();

@@ -21,7 +21,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5434:5432"
 
   trips_db:
     image: postgres:15
@@ -93,6 +93,114 @@ services:
     ports:
       - "9095:9092"
       - "9097:9093"
+
+  # ══════════════════════════════════════════════════════
+  #  APPLICATION SERVICES
+  # ══════════════════════════════════════════════════════
+
+  user-service:
+    build:
+      context: ./user_service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://users_db:5432/users_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://gateway-service:8090/eureka/
+    depends_on:
+      - users_db
+
+  trip-service:
+    build:
+      context: ./trip_service
+      dockerfile: Dockerfile
+    container_name: trip-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://trips_db:5432/trips_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_KAFKA_BOOTSTRAP-SERVERS: broker1:9092,broker2:9092,broker3:9092
+      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://gateway-service:8090/eureka/
+    depends_on:
+      - trips_db
+      - redis
+      - broker1
+
+  location-service:
+    build:
+      context: ./location_service
+      dockerfile: Dockerfile
+    container_name: location-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_KAFKA_BOOTSTRAP-SERVERS: broker1:9092,broker2:9092,broker3:9092
+      SPRING_KAFKA_CONSUMER_BOOTSTRAP-SERVERS: broker1:9092,broker2:9092,broker3:9092
+      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://gateway-service:8090/eureka/
+    depends_on:
+      - redis
+      - broker1
+
+  matching-service:
+    build:
+      context: ./matching-service
+      dockerfile: Dockerfile
+    container_name: matching-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_KAFKA_BOOTSTRAP-SERVERS: broker1:9092,broker2:9092,broker3:9092
+      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://gateway-service:8090/eureka/
+    depends_on:
+      - redis
+      - broker1
+
+  ws-driver-service:
+    build:
+      context: ./ws-driver-service
+      dockerfile: Dockerfile
+    container_name: ws-driver-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP-SERVERS: broker1:9092,broker2:9092,broker3:9092
+      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://gateway-service:8090/eureka/
+    depends_on:
+      - broker1
+
+  ws-rider-service:
+    build:
+      context: ./ws-rider-service
+      dockerfile: Dockerfile
+    container_name: ws-rider-service
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP-SERVERS: broker1:9092,broker2:9092,broker3:9092
+      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://gateway-service:8090/eureka/
+    depends_on:
+      - broker1
+
+  gateway-service:
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    ports:
+      - "8090:8090"
+    environment:
+      SPRING_DATA_REDIS_HOST: redis
+      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://gateway-service:8090/eureka/
+    depends_on:
+      - redis
 
 volumes:
   redis_data:

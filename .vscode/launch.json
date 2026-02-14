@@ -15,7 +15,8 @@
             "mainClass": "com.woundex.user.DriverServiceApplication",
             "projectName": "user",
             "args": "",
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=62845 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=user"
         },
         {
             "type": "java",
@@ -24,6 +25,36 @@
             "cwd": "${workspaceFolder}",
             "mainClass": "com.woundex.location_service.LocationServiceApplication",
             "projectName": "com.woundex-location_service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-WsDriverServiceApplication<ws-driver-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.woundex.ws_driver_service.WsDriverServiceApplication",
+            "projectName": "ws-driver-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-TripServiceApplication<trip_service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.woundex.trip_service.TripServiceApplication",
+            "projectName": "trip_service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-GatewayServiceApplication<gateway-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.woundex.gateway_service.GatewayServiceApplication",
+            "projectName": "gateway-service",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
         }

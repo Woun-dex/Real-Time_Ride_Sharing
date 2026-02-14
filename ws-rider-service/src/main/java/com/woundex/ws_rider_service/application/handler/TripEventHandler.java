@@ -7,6 +7,9 @@ import com.woundex.ws_rider_service.domain.Event.TripAssignedEvent;
 import com.woundex.ws_rider_service.domain.Event.TripLifecycleEvent;
 import com.woundex.ws_rider_service.dto.RiderPushMessage;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class TripEventHandler {
 
     private final PushNotifier notifier;
