@@ -1,24 +1,29 @@
 package com.woundex.ws_rider_service.messaging.kafka;
 
+import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.woundex.ws_rider_service.application.handler.TripEventHandler;
 import com.woundex.ws_rider_service.domain.Event.TripLifecycleEvent;
 import com.woundex.ws_rider_service.domain.value_object.TripId;
-import org.junit.jupiter.api.Test;
-
-import static org.mockito.Mockito.*;
-
-import java.time.Instant;
 
 public class TripEventConsumerTest {
 
     @Test
     void consume_delegates_to_handler_with_trip_lifecycle_event() {
         TripEventHandler handler = mock(TripEventHandler.class);
-        TripEventConsumer consumer = new TripEventConsumer(handler);
+        ObjectMapper mapper = new ObjectMapper();
+        TripEventConsumer consumer = new TripEventConsumer(handler, mapper);
 
-        TripLifecycleEvent event = new TripLifecycleEvent(TripId.generate(), "ASSIGNED", Instant.now());
-        consumer.consume(event);
+        String tripId = TripId.generate().toString();
+        String json = "{\"tripId\":\"" + tripId + "\"}";
 
-        verify(handler, times(1)).handle(event);
+        consumer.consume(json, "ASSIGNED");
+
+        verify(handler, times(1)).handle(any(TripLifecycleEvent.class));
     }
 }

@@ -1,7 +1,5 @@
 package com.woundex.trip_service.domain.commands;
 
-import java.sql.Driver;
-
 import com.woundex.trip_service.domain.value_object.DriverId;
 import com.woundex.trip_service.domain.value_object.TripId;
 

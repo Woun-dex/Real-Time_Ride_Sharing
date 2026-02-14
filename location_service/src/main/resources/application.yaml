@@ -1,10 +1,10 @@
 spring:
   application:
-    name: location_service
+    name: location-service
   
   data:
     redis:
-      host: redis
+      host: localhost
       port: 6379
       timeout: 60000ms
       jedis:
@@ -25,15 +25,13 @@ spring:
       bootstrap-servers: localhost:9092,localhost:9094,localhost:9095
       group-id: location-service-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       properties:
         spring.json.trusted.packages: "*"
       auto-offset-reset: earliest
 
 server:
   port: 8081
-  servlet:
-    context-path: /api
 
 management:
   endpoints:

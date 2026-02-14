@@ -40,7 +40,7 @@ public class UserService {
                 .email(request.getEmail())
                 .phone(request.getPhone())
                 .passwordHash(passwordHash)
-                .licenceNumber(request.getLicence_number())
+                .licenseNumber(request.getLicence_number())
                 .vehicleInfo(request.getVehicle_info())
                 .build();
             // You would typically map SignUpRequest to DriverEntity here

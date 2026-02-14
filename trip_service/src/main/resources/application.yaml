@@ -1,11 +1,11 @@
 server:
-    port: 0
+    port: 8083
 
 spring:
     application:
         name: trip-service
     datasource:
-        url: jdbc:postgresql://trips_db:5433/trips_db 
+        url: jdbc:postgresql://localhost:5433/trips_db 
         username: user
         password: password
         driver-class-name: org.postgresql.Driver

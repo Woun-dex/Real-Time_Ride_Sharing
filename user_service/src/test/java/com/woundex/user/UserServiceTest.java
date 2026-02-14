@@ -54,7 +54,7 @@ class UserServiceTest {
         assertThat(saved.getName()).isEqualTo("John Doe");
         assertThat(saved.getEmail()).isEqualTo("john@example.com");
         assertThat(saved.getPhone()).isEqualTo("1234567890");
-        assertThat(saved.getLicenceNumber()).isEqualTo("LIC123");
+        assertThat(saved.getLicenseNumber()).isEqualTo("LIC123");
         assertThat(saved.getVehicleInfo()).isEqualTo("Toyota");
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();

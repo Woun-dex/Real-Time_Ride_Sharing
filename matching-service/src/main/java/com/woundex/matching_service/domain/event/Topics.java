@@ -5,7 +5,7 @@ public final class Topics {
     private Topics() {}
 
     public static final String TRIP_REQUESTED     = "trip.requested";
-    public static final String DRIVER_LOCATION     = "driver.location";
+    public static final String DRIVER_LOCATION     = "driver-locations";
     public static final String DRIVER_OFFER        = "driver.offer";
     public static final String DRIVER_ACCEPTED     = "driver.accepted";
     public static final String DRIVER_ASSIGNED     = "driver.assigned";
