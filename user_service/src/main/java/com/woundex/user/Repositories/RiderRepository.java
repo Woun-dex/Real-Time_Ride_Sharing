@@ -8,8 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.woundex.user.entities.RiderEntity;
 
 public interface RiderRepository extends JpaRepository<RiderEntity, UUID> {
-
     Optional<RiderEntity> findByEmail(String email);
-
-    
+    Optional<RiderEntity> findByEmailAndIsDeletedFalse(String email);
 }

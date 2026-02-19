@@ -1,105 +1,184 @@
 package com.woundex.user.Services;
 
+import java.time.LocalDateTime;
 
-import java.util.UUID;
-
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.woundex.user.Repositories.DriverRepository;
 import com.woundex.user.Repositories.RiderRepository;
+import com.woundex.user.dto.DriverStatusRequest;
 import com.woundex.user.dto.LoginRequest;
 import com.woundex.user.dto.LoginResponse;
 import com.woundex.user.dto.SignUpRequest;
+import com.woundex.user.dto.UpdateProfileRequest;
+import com.woundex.user.dto.UserProfileResponse;
 import com.woundex.user.entities.DriverEntity;
 import com.woundex.user.entities.RiderEntity;
+import com.woundex.user.security.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
 public class UserService {
-    
+
     private final DriverRepository driverRepository;
     private final RiderRepository riderRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
-    public void registerDriver(SignUpRequest request) {
-
-
+    // ------------------------------------------------------------------ //
+    // POST /api/users/register
+    // ------------------------------------------------------------------ //
+    public void registerUser(SignUpRequest request) {
         String role = request.getRole();
-        String password = request.getPassword();
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        String passwordHash = encoder.encode(password);
+        String passwordHash = passwordEncoder.encode(request.getPassword());
 
-
-        if (role.equals("DRIVER")) {
-            // Save driver details to the database
-            DriverEntity driver =  DriverEntity.builder()
-                .id(UUID.randomUUID())
-                .name(request.getName())
-                .email(request.getEmail())
-                .phone(request.getPhone())
-                .passwordHash(passwordHash)
-                .licenseNumber(request.getLicence_number())
-                .vehicleInfo(request.getVehicle_info())
-                .build();
-            // You would typically map SignUpRequest to DriverEntity here
-
+        if ("DRIVER".equalsIgnoreCase(role)) {
+            DriverEntity driver = DriverEntity.builder()
+                    .name(request.getName())
+                    .email(request.getEmail())
+                    .phone(request.getPhone())
+                    .passwordHash(passwordHash)
+                    .licenseNumber(request.getLicence_number())
+                    .vehicleInfo(request.getVehicle_info())
+                    .build();
             driverRepository.save(driver);
-            // and then save it using driverRepository.save(driverEntity);
-        } else if (role.equals("RIDER")) {
-            // Save rider details to the database
+        } else if ("RIDER".equalsIgnoreCase(role)) {
             RiderEntity rider = RiderEntity.builder()
-                .id(UUID.randomUUID())
-                .name(request.getName())
-                .email(request.getEmail())
-                .phone(request.getPhone())
-                .passwordHash(passwordHash)
-                .build();
-            // You would typically map SignUpRequest to RiderEntity here
+                    .name(request.getName())
+                    .email(request.getEmail())
+                    .phone(request.getPhone())
+                    .passwordHash(passwordHash)
+                    .build();
             riderRepository.save(rider);
-            // and then save it using riderRepository.save(riderEntity);
         } else {
             throw new IllegalArgumentException("Invalid role: " + role);
         }
-
     }
 
+    // ------------------------------------------------------------------ //
+    // POST /api/auth/login
+    // ------------------------------------------------------------------ //
     public LoginResponse loginUser(LoginRequest request) {
         String role = request.getRole();
 
-        if (role.equals("DRIVER")) {
-            // Authenticate driver
-            DriverEntity driver = driverRepository.findByEmail(request.getEmail()).orElseThrow(() -> new IllegalArgumentException("Driver not found"));
-            if ( driver != null) {
-                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-                if (encoder.matches(request.getPassword(), driver.getPasswordHash())) {
-                    return new LoginResponse(driver.getId().toString(), driver.getName(), driver.getEmail(), "DRIVER" , null, null);
-                } else {
-                    throw new IllegalArgumentException("Invalid password");
-                }
+        if ("DRIVER".equalsIgnoreCase(role)) {
+            DriverEntity driver = driverRepository
+                    .findByEmailAndIsDeletedFalse(request.getEmail())
+                    .orElseThrow(() -> new IllegalArgumentException("Driver not found"));
+
+            if (!passwordEncoder.matches(request.getPassword(), driver.getPasswordHash())) {
+                throw new IllegalArgumentException("Invalid password");
             }
-            // Fetch driver by email
-            // Compare password hashes
-            // Return appropriate LoginResponse
-        } else if (role.equals("RIDER")) {
-            // Authenticate rider
-            RiderEntity rider = riderRepository.findByEmail(request.getEmail()).orElseThrow(() -> new IllegalArgumentException("Rider not found"));
-            if ( rider != null) {
-                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-                if (encoder.matches(request.getPassword(), rider.getPasswordHash())) {
-                    return new LoginResponse(rider.getId().toString(), rider.getName(), rider.getEmail(), "RIDER" , null, null);
-                } else {
-                    throw new IllegalArgumentException("Invalid password");
-                }
+            String token = jwtUtil.generateToken(
+                    driver.getId().toString(), driver.getEmail(), "DRIVER");
+            return new LoginResponse(
+                    driver.getId().toString(), driver.getName(), driver.getEmail(),
+                    "DRIVER", token, jwtUtil.getExpirationSeconds());
+
+        } else if ("RIDER".equalsIgnoreCase(role)) {
+            RiderEntity rider = riderRepository
+                    .findByEmailAndIsDeletedFalse(request.getEmail())
+                    .orElseThrow(() -> new IllegalArgumentException("Rider not found"));
+
+            if (!passwordEncoder.matches(request.getPassword(), rider.getPasswordHash())) {
+                throw new IllegalArgumentException("Invalid password");
             }
-            // Fetch rider by email
-            // Compare password hashes
-            // Return appropriate LoginResponse
+            String token = jwtUtil.generateToken(
+                    rider.getId().toString(), rider.getEmail(), "RIDER");
+            return new LoginResponse(
+                    rider.getId().toString(), rider.getName(), rider.getEmail(),
+                    "RIDER", token, jwtUtil.getExpirationSeconds());
+
         } else {
             throw new IllegalArgumentException("Invalid role: " + role);
         }
-        return null;
     }
-    
+
+    // ------------------------------------------------------------------ //
+    // GET /api/users/me
+    // ------------------------------------------------------------------ //
+    public UserProfileResponse getProfile(String email, String role) {
+        if ("DRIVER".equalsIgnoreCase(role)) {
+            DriverEntity d = driverRepository
+                    .findByEmailAndIsDeletedFalse(email)
+                    .orElseThrow(() -> new IllegalArgumentException("Driver not found"));
+            return UserProfileResponse.builder()
+                    .userId(d.getId().toString())
+                    .name(d.getName())
+                    .email(d.getEmail())
+                    .phone(d.getPhone())
+                    .role("DRIVER")
+                    .status(d.getStatus())
+                    .build();
+        } else {
+            RiderEntity r = riderRepository
+                    .findByEmailAndIsDeletedFalse(email)
+                    .orElseThrow(() -> new IllegalArgumentException("Rider not found"));
+            return UserProfileResponse.builder()
+                    .userId(r.getId().toString())
+                    .name(r.getName())
+                    .email(r.getEmail())
+                    .phone(r.getPhone())
+                    .role("RIDER")
+                    .build();
+        }
+    }
+
+    // ------------------------------------------------------------------ //
+    // PUT /api/users/me
+    // ------------------------------------------------------------------ //
+    public UserProfileResponse updateProfile(String email, String role, UpdateProfileRequest req) {
+        if ("DRIVER".equalsIgnoreCase(role)) {
+            DriverEntity d = driverRepository
+                    .findByEmailAndIsDeletedFalse(email)
+                    .orElseThrow(() -> new IllegalArgumentException("Driver not found"));
+            if (req.getName()  != null) d.setName(req.getName());
+            if (req.getPhone() != null) d.setPhone(req.getPhone());
+            driverRepository.save(d);
+        } else {
+            RiderEntity r = riderRepository
+                    .findByEmailAndIsDeletedFalse(email)
+                    .orElseThrow(() -> new IllegalArgumentException("Rider not found"));
+            if (req.getName()  != null) r.setName(req.getName());
+            if (req.getPhone() != null) r.setPhone(req.getPhone());
+            riderRepository.save(r);
+        }
+        return getProfile(email, role);
+    }
+
+    // ------------------------------------------------------------------ //
+    // DELETE /api/users/me  (soft delete)
+    // ------------------------------------------------------------------ //
+    public void softDeleteAccount(String email, String role) {
+        if ("DRIVER".equalsIgnoreCase(role)) {
+            DriverEntity d = driverRepository
+                    .findByEmailAndIsDeletedFalse(email)
+                    .orElseThrow(() -> new IllegalArgumentException("Driver not found"));
+            d.setIsDeleted(true);
+            d.setDeletedAt(LocalDateTime.now());
+            driverRepository.save(d);
+        } else {
+            RiderEntity r = riderRepository
+                    .findByEmailAndIsDeletedFalse(email)
+                    .orElseThrow(() -> new IllegalArgumentException("Rider not found"));
+            r.setIsDeleted(true);
+            r.setDeletedAt(LocalDateTime.now());
+            riderRepository.save(r);
+        }
+    }
+
+    // ------------------------------------------------------------------ //
+    // PUT /api/drivers/status
+    // ------------------------------------------------------------------ //
+    public UserProfileResponse toggleDriverStatus(String email, DriverStatusRequest req) {
+        DriverEntity d = driverRepository
+                .findByEmailAndIsDeletedFalse(email)
+                .orElseThrow(() -> new IllegalArgumentException("Driver not found"));
+        d.setStatus(req.getStatus().toUpperCase());
+        driverRepository.save(d);
+        return getProfile(email, "DRIVER");
+    }
 }
