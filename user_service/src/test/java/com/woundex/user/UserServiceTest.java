@@ -45,7 +45,7 @@ class UserServiceTest {
         when(req.getLicence_number()).thenReturn("LIC123");
         when(req.getVehicle_info()).thenReturn("Toyota");
 
-        userService.registerDriver(req);
+        userService.registerUser(req);
 
         ArgumentCaptor<DriverEntity> captor = ArgumentCaptor.forClass(DriverEntity.class);
         verify(driverRepository).save(captor.capture());

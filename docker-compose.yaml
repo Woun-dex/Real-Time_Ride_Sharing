@@ -1,4 +1,8 @@
 services:
+  # ══════════════════════════════════════════════════════
+  #  INFRASTRUCTURE
+  # ══════════════════════════════════════════════════════
+
   redis:
     image: redis:7-alpine
     container_name: redis
@@ -12,8 +16,10 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+
   users_db:
     image: postgres:15
+    container_name: users-db
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
@@ -22,9 +28,15 @@ services:
       - db_data:/var/lib/postgresql/data
     ports:
       - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d users_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   trips_db:
     image: postgres:15
+    container_name: trips-db
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
@@ -33,7 +45,12 @@ services:
       - trips_db_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
-  
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d trips_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   broker1:
     image: apache/kafka:3.7.0
     hostname: broker1
@@ -53,6 +70,12 @@ services:
     ports:
       - "9092:9092"
       - "9093:9093"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
 
   broker2:
     image: apache/kafka:3.7.0
@@ -73,6 +96,12 @@ services:
     ports:
       - "9094:9092"
       - "9096:9093"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
 
   broker3:
     image: apache/kafka:3.7.0
@@ -93,6 +122,12 @@ services:
     ports:
       - "9095:9092"
       - "9097:9093"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
 
   # ══════════════════════════════════════════════════════
   #  APPLICATION SERVICES
@@ -109,9 +144,10 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://users_db:5432/users_db
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: password
-      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://gateway-service:8090/eureka/
+      EUREKA_CLIENT_ENABLED: "false"
     depends_on:
-      - users_db
+      users_db:
+        condition: service_healthy
 
   trip-service:
     build:
@@ -125,12 +161,15 @@ services:
       SPRING_DATASOURCE_USERNAME: user
       SPRING_DATASOURCE_PASSWORD: password
       SPRING_DATA_REDIS_HOST: redis
-      SPRING_KAFKA_BOOTSTRAP-SERVERS: broker1:9092,broker2:9092,broker3:9092
-      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://gateway-service:8090/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: broker1:9092,broker2:9092,broker3:9092
+      EUREKA_CLIENT_ENABLED: "false"
     depends_on:
-      - trips_db
-      - redis
-      - broker1
+      trips_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      broker1:
+        condition: service_healthy
 
   location-service:
     build:
@@ -141,12 +180,14 @@ services:
       - "8081:8081"
     environment:
       SPRING_DATA_REDIS_HOST: redis
-      SPRING_KAFKA_BOOTSTRAP-SERVERS: broker1:9092,broker2:9092,broker3:9092
-      SPRING_KAFKA_CONSUMER_BOOTSTRAP-SERVERS: broker1:9092,broker2:9092,broker3:9092
-      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://gateway-service:8090/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: broker1:9092,broker2:9092,broker3:9092
+      SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS: broker1:9092,broker2:9092,broker3:9092
+      EUREKA_CLIENT_ENABLED: "false"
     depends_on:
-      - redis
-      - broker1
+      redis:
+        condition: service_healthy
+      broker1:
+        condition: service_healthy
 
   matching-service:
     build:
@@ -157,11 +198,13 @@ services:
       - "8082:8082"
     environment:
       SPRING_DATA_REDIS_HOST: redis
-      SPRING_KAFKA_BOOTSTRAP-SERVERS: broker1:9092,broker2:9092,broker3:9092
-      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://gateway-service:8090/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: broker1:9092,broker2:9092,broker3:9092
+      EUREKA_CLIENT_ENABLED: "false"
     depends_on:
-      - redis
-      - broker1
+      redis:
+        condition: service_healthy
+      broker1:
+        condition: service_healthy
 
   ws-driver-service:
     build:
@@ -171,10 +214,11 @@ services:
     ports:
       - "8084:8084"
     environment:
-      SPRING_KAFKA_BOOTSTRAP-SERVERS: broker1:9092,broker2:9092,broker3:9092
-      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://gateway-service:8090/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: broker1:9092,broker2:9092,broker3:9092
+      EUREKA_CLIENT_ENABLED: "false"
     depends_on:
-      - broker1
+      broker1:
+        condition: service_healthy
 
   ws-rider-service:
     build:
@@ -184,10 +228,11 @@ services:
     ports:
       - "8085:8085"
     environment:
-      SPRING_KAFKA_BOOTSTRAP-SERVERS: broker1:9092,broker2:9092,broker3:9092
-      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://gateway-service:8090/eureka/
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: broker1:9092,broker2:9092,broker3:9092
+      EUREKA_CLIENT_ENABLED: "false"
     depends_on:
-      - broker1
+      broker1:
+        condition: service_healthy
 
   gateway-service:
     build:
@@ -197,10 +242,12 @@ services:
     ports:
       - "8090:8090"
     environment:
+      SPRING_PROFILES_ACTIVE: docker
       SPRING_DATA_REDIS_HOST: redis
-      EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://gateway-service:8090/eureka/
+      EUREKA_CLIENT_ENABLED: "false"
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
 
 volumes:
   redis_data:

@@ -1,0 +1,92 @@
+# ─── Docker Compose profile ───
+# Activated via SPRING_PROFILES_ACTIVE=docker
+# Overrides routes to use direct URIs (no Eureka needed)
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+
+      routes:
+        # ── Auth (user-service) ──
+        - id: auth-service
+          uri: http://user-service:8080
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: userServiceCB
+                fallbackUri: forward:/fallback/user-service
+
+        # ── User management (user-service) ──
+        - id: user-service
+          uri: http://user-service:8080
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: userServiceCB
+                fallbackUri: forward:/fallback/user-service
+
+        # ── Driver status toggle (user-service) ──
+        - id: driver-status
+          uri: http://user-service:8080
+          predicates:
+            - Path=/api/drivers/status
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: userServiceCB
+                fallbackUri: forward:/fallback/user-service
+
+        # ── Trip Service ──
+        - id: trip-service
+          uri: http://trip-service:8083
+          predicates:
+            - Path=/api/trips/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: tripServiceCB
+                fallbackUri: forward:/fallback/trip-service
+
+        # ── Nearby drivers (location-service) ──
+        - id: location-service
+          uri: http://location-service:8081
+          predicates:
+            - Path=/api/drivers/nearby
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: locationServiceCB
+                fallbackUri: forward:/fallback/location-service
+
+        # ── WebSocket: Rider ──
+        - id: ws-rider-service
+          uri: ws://ws-rider-service:8085
+          predicates:
+            - Path=/ws/rider/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: wsRiderCB
+                fallbackUri: forward:/fallback/ws-rider-service
+
+        # ── WebSocket: Driver ──
+        - id: ws-driver-service
+          uri: ws://ws-driver-service:8084
+          predicates:
+            - Path=/ws/driver/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: wsDriverCB
+                fallbackUri: forward:/fallback/ws-driver-service
+
+eureka:
+  client:
+    enabled: false

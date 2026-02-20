@@ -7,23 +7,28 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.woundex.trip_service.application.Commands.TripCommandHandler;
+import com.woundex.trip_service.application.Queries.TripQueryHandler;
 import com.woundex.trip_service.domain.commands.*;
 import com.woundex.trip_service.domain.value_object.*;
 import com.woundex.trip_service.application.dtos.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/trips")
+@RequestMapping("/api/trips")
 @RequiredArgsConstructor
 public class TripController {
 
     private final TripCommandHandler commandHandler;
+    private final TripQueryHandler queryHandler;
 
-    @PostMapping
-    public ResponseEntity<?> createTrip(@Valid @RequestBody CreateTripRequest request) {
-        // DTO → Command (translate external to domain language)
+    // ──────────────────────────────────────────────────────────
+    //  POST /api/trips/request  –  Request a new trip
+    // ──────────────────────────────────────────────────────────
+    @PostMapping("/request")
+    public ResponseEntity<?> requestTrip(@Valid @RequestBody CreateTripRequest request) {
         CreateTripCommand command = new CreateTripCommand(
             new RiderId(request.riderId()),
             new Location(request.pickupLocation().latitude(), request.pickupLocation().longitude()),
@@ -36,6 +41,109 @@ public class TripController {
             .status(HttpStatus.CREATED)
             .body(Map.of("tripId", tripId.value()));
     }
+
+    // ──────────────────────────────────────────────────────────
+    //  POST /api/trips/{id}/accept  –  Driver accepts
+    // ──────────────────────────────────────────────────────────
+    @PostMapping("/{id}/accept")
+    public ResponseEntity<?> acceptTrip(
+        @PathVariable String id,
+        @Valid @RequestBody AcceptTripRequest request
+    ) {
+        AcceptTripCommand command = new AcceptTripCommand(
+            new TripId(id),
+            new DriverId(request.driverId())
+        );
+
+        commandHandler.handle(command);
+
+        return ResponseEntity.ok(Map.of("message", "Trip accepted by driver"));
+    }
+
+    // ──────────────────────────────────────────────────────────
+    //  PUT /api/trips/{id}/status  –  Transition status
+    // ──────────────────────────────────────────────────────────
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateStatus(
+        @PathVariable String id,
+        @Valid @RequestBody UpdateStatusRequest request
+    ) {
+        TripStatus targetStatus = TripStatus.valueOf(request.status().toUpperCase());
+        DriverId driverId = request.driverId() != null ? new DriverId(request.driverId()) : null;
+
+        UpdateStatusCommand command = new UpdateStatusCommand(
+            new TripId(id),
+            targetStatus,
+            driverId
+        );
+
+        commandHandler.handle(command);
+
+        return ResponseEntity.ok(Map.of("message", "Trip status updated to " + targetStatus));
+    }
+
+    // ──────────────────────────────────────────────────────────
+    //  GET /api/trips/{id}  –  Get trip details
+    // ──────────────────────────────────────────────────────────
+    @GetMapping("/{id}")
+    public ResponseEntity<TripResponse> getTripDetails(@PathVariable UUID id) {
+        TripResponse trip = queryHandler.findById(id);
+        return ResponseEntity.ok(trip);
+    }
+
+    // ──────────────────────────────────────────────────────────
+    //  GET /api/trips/history  –  Rider / driver trip history
+    //  Usage: ?riderId=... or ?driverId=...
+    // ──────────────────────────────────────────────────────────
+    @GetMapping("/history")
+    public ResponseEntity<List<TripResponse>> getTripHistory(
+        @RequestParam(required = false) UUID riderId,
+        @RequestParam(required = false) UUID driverId
+    ) {
+        if (riderId != null) {
+            return ResponseEntity.ok(queryHandler.findHistoryByRider(riderId));
+        }
+        if (driverId != null) {
+            return ResponseEntity.ok(queryHandler.findHistoryByDriver(driverId));
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
+    // ──────────────────────────────────────────────────────────
+    //  POST /api/trips/{id}/rate  –  Submit rating
+    // ──────────────────────────────────────────────────────────
+    @PostMapping("/{id}/rate")
+    public ResponseEntity<?> rateTrip(
+        @PathVariable String id,
+        @Valid @RequestBody RateTripRequest request
+    ) {
+        RateTripCommand command = new RateTripCommand(
+            new TripId(id),
+            request.rating()
+        );
+
+        commandHandler.handle(command);
+
+        return ResponseEntity.ok(Map.of("message", "Rating submitted"));
+    }
+
+    // ──────────────────────────────────────────────────────────
+    //  POST /api/trips/{id}/cancel  –  Cancel trip
+    // ──────────────────────────────────────────────────────────
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelTrip(@PathVariable String id) {
+        CancelTripCommand command = new CancelTripCommand(
+            new TripId(id)
+        );
+
+        commandHandler.handle(command);
+
+        return ResponseEntity.ok(Map.of("message", "Trip cancelled"));
+    }
+
+    // ──────────────────────────────────────────────────────────
+    //  Legacy endpoints (backward compatibility with v1 paths)
+    // ──────────────────────────────────────────────────────────
 
     @PutMapping("/{tripId}/assign-driver")
     public ResponseEntity<?> assignDriver(
@@ -76,18 +184,5 @@ public class TripController {
         commandHandler.handle(command);
 
         return ResponseEntity.ok(Map.of("message", "Trip completed"));
-    }
-
-    @PutMapping("/{tripId}/cancel")
-    public ResponseEntity<?> cancelTrip(
-        @PathVariable String tripId
-        ) {
-        CancelTripCommand command = new CancelTripCommand(
-            new TripId(tripId)
-        );
-
-        commandHandler.handle(command);
-
-        return ResponseEntity.ok(Map.of("message", "Trip cancelled"));
     }
 }

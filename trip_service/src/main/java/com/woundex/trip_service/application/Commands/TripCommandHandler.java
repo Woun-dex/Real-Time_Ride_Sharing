@@ -2,11 +2,14 @@ package com.woundex.trip_service.application.Commands;
 
 import org.springframework.stereotype.Service;
 
+import com.woundex.trip_service.domain.commands.AcceptTripCommand;
 import com.woundex.trip_service.domain.commands.AssignDriverCommand;
 import com.woundex.trip_service.domain.commands.CancelTripCommand;
 import com.woundex.trip_service.domain.commands.CompleteTripCommand;
 import com.woundex.trip_service.domain.commands.CreateTripCommand;
+import com.woundex.trip_service.domain.commands.RateTripCommand;
 import com.woundex.trip_service.domain.commands.StartTripCommand;
+import com.woundex.trip_service.domain.commands.UpdateStatusCommand;
 import com.woundex.trip_service.domain.entities.Trip_Entity;
 import com.woundex.trip_service.domain.value_object.TripId;
 import com.woundex.trip_service.infrastructure.messaging.DomainEventPublisher;
@@ -86,6 +89,40 @@ public class TripCommandHandler {
         
         trip.cancel();
         
+        tripRepository.save(trip);
+        domainEventPublisher.publish(trip.getDomainEvents());
+        trip.clearEvents();
+    }
+
+    @Transactional
+    public void handle(AcceptTripCommand cmd) {
+        Trip_Entity trip = tripRepository.findById(cmd.tripId().value())
+            .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
+
+        trip.accept(cmd.driverId());
+
+        tripRepository.save(trip);
+        domainEventPublisher.publish(trip.getDomainEvents());
+        trip.clearEvents();
+    }
+
+    @Transactional
+    public void handle(RateTripCommand cmd) {
+        Trip_Entity trip = tripRepository.findById(cmd.tripId().value())
+            .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
+
+        trip.rate(cmd.rating());
+
+        tripRepository.save(trip);
+    }
+
+    @Transactional
+    public void handle(UpdateStatusCommand cmd) {
+        Trip_Entity trip = tripRepository.findById(cmd.tripId().value())
+            .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
+
+        trip.transitionTo(cmd.status(), cmd.driverId());
+
         tripRepository.save(trip);
         domainEventPublisher.publish(trip.getDomainEvents());
         trip.clearEvents();
