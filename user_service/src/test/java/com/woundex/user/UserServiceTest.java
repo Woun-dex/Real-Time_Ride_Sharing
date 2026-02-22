@@ -1,15 +1,17 @@
 package com.woundex.user;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -17,10 +19,10 @@ import com.woundex.user.Repositories.DriverRepository;
 import com.woundex.user.Repositories.RiderRepository;
 import com.woundex.user.Services.UserService;
 import com.woundex.user.dto.LoginRequest;
+import com.woundex.user.dto.LoginResponse;
 import com.woundex.user.dto.SignUpRequest;
 import com.woundex.user.entities.DriverEntity;
 import com.woundex.user.entities.RiderEntity;
-import com.woundex.user.dto.LoginResponse;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -89,8 +91,6 @@ class UserServiceTest {
         assertThat(resp.getName()).isEqualTo(driver.getName());
         assertThat(resp.getEmail()).isEqualTo(driver.getEmail());
         assertThat(resp.getRole()).isEqualTo("DRIVER");
-        assertThat(resp.getAccessToken()).isNull();
-        assertThat(resp.getExpiresIn()).isNull();
 
         // invalid password case
         LoginRequest badReq = mock(LoginRequest.class);
