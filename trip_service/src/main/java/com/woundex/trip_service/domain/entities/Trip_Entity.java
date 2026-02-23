@@ -57,6 +57,9 @@ public class Trip_Entity {
     @Column(name = "status", nullable = false, length = 20)
     private TripStatus status;
 
+    @Column(name = "rating")
+    private Integer rating;
+
     @Transient
     private final List<Object> domainEvents = new ArrayList<>();
 
@@ -114,6 +117,33 @@ public class Trip_Entity {
         addEvent( new TripCancelledEvent(getId()));
     }
 
+    /** Driver accepts trip – alias for assignDriver with a distinct event. */
+    public void accept(DriverId driver) {
+        if (status != TripStatus.REQUESTED) throw new IllegalStateException("Trip cannot be accepted");
+        Objects.requireNonNull(driver, "driverId");
+        this.driverId = driver.value();
+        this.status = TripStatus.ASSIGNED;
+        addEvent(new DriverAssignedEvent(getId(), driver));
+    }
+
+    /** Generic status transition used by PUT /status endpoint. */
+    public void transitionTo(TripStatus target, DriverId driver) {
+        switch (target) {
+            case ASSIGNED -> assignDriver(driver);
+            case IN_PROGRESS -> start();
+            case COMPLETED -> complete();
+            case CANCELLED -> cancel();
+            default -> throw new IllegalArgumentException("Cannot transition to " + target);
+        }
+    }
+
+    /** Submit a 1-5 rating (only after trip is completed). */
+    public void rate(int rating) {
+        if (status != TripStatus.COMPLETED) throw new IllegalStateException("Can only rate a completed trip");
+        if (rating < 1 || rating > 5) throw new IllegalArgumentException("Rating must be between 1 and 5");
+        this.rating = rating;
+    }
+
     private void addEvent(Object event){
         domainEvents.add(event);
     }
@@ -131,6 +161,7 @@ public class Trip_Entity {
     public Location getPickup() { return new Location(pickupLat, pickupLng); }
     public Location getDestination() { return new Location(destinationLat, destinationLng); }
     public TripStatus getStatus() { return status; }
+    public Optional<Integer> getRating() { return Optional.ofNullable(rating); }
 
     @Override
     public boolean equals(Object o) {

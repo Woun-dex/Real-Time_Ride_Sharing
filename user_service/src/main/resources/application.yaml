@@ -14,7 +14,5 @@ spring:
         baseline-on-migrate: true
         locations: classpath:db/migration
 
-jwt:
-    secret: 3D8F2A1B9C4E7D6F0A3B5C8E2F1D4A7B9C6E3F0D2A5B8C1E4F7D0A3B6C9E2F5
-    expiration: 86400
+
 
