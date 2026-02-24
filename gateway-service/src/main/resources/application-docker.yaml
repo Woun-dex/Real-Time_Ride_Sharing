@@ -65,27 +65,34 @@ spring:
                 name: locationServiceCB
                 fallbackUri: forward:/fallback/location-service
 
+        # ── Location updates (location-service) ──
+        - id: location-update-service
+          uri: http://location-service:8081
+          predicates:
+            - Path=/api/location/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: locationServiceCB
+                fallbackUri: forward:/fallback/location-service
+
         # ── WebSocket: Rider ──
         - id: ws-rider-service
           uri: ws://ws-rider-service:8085
           predicates:
             - Path=/ws/rider/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: wsRiderCB
-                fallbackUri: forward:/fallback/ws-rider-service
+
+        # ── WebSocket: Trip tracking (ws-rider-service) ──
+        - id: ws-track-service
+          uri: ws://ws-rider-service:8085
+          predicates:
+            - Path=/ws/track/**
 
         # ── WebSocket: Driver ──
         - id: ws-driver-service
           uri: ws://ws-driver-service:8084
           predicates:
             - Path=/ws/driver/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: wsDriverCB
-                fallbackUri: forward:/fallback/ws-driver-service
 
 eureka:
   client:

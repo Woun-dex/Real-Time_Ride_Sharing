@@ -107,6 +107,8 @@ public class UserService {
                     .phone(d.getPhone())
                     .role("DRIVER")
                     .status(d.getStatus())
+                    .vehicleInfo(d.getVehicleInfo())
+                    .licenseNumber(d.getLicenseNumber())
                     .build();
         }
         RiderEntity r = riderRepository.findById(id)
@@ -158,7 +160,14 @@ public class UserService {
         riderRepository.save(r);
     }
 
-    // PUT /api/drivers/{id}/status
+    /** Look up a driver's UUID by email. */
+    public UUID findDriverIdByEmail(String email) {
+        return driverRepository.findByEmailAndIsDeletedFalse(email)
+                .map(DriverEntity::getId)
+                .orElseThrow(() -> new IllegalArgumentException("No active driver found for email: " + email));
+    }
+
+    // PUT /api/drivers/status
     public UserProfileResponse toggleDriverStatus(UUID id, DriverStatusRequest req) {
         DriverEntity d = driverRepository.findById(id)
                 .filter(driver -> !driver.getIsDeleted())

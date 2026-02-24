@@ -20,7 +20,7 @@ import com.woundex.matching_service.domain.model.Position;
 @Service
 public class RedisGeoService {
 
-    private static final String GEO_KEY = "drivers:locations";
+    private static final String GEO_KEY = "drivers:geo";
 
     private final GeoOperations<String, String> geoOps;
 
@@ -42,7 +42,7 @@ public class RedisGeoService {
     public List<NearbyDriver> findNearby(Position center, double radiusMeters, int limit) {
         Circle within = new Circle(
                 new Point(center.getLon(), center.getLat()),
-                new Distance(radiusMeters, Metrics.MILES));
+                new Distance(radiusMeters / 1000.0, Metrics.KILOMETERS));
 
         RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs
                 .newGeoRadiusArgs()

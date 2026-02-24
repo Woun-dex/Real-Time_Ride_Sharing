@@ -1,13 +1,14 @@
 package com.woundex.trip_service.api.controller;
 
-import com.woundex.trip_service.application.dtos.ErrorResponse;
+import java.time.Instant;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.Instant;
+import com.woundex.trip_service.application.dtos.ErrorResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -54,6 +55,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
+        ex.printStackTrace();
         ErrorResponse error = new ErrorResponse(
             "An unexpected error occurred",
             "Internal Server Error",

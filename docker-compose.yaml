@@ -38,7 +38,7 @@ services:
     image: postgres:15
     container_name: trips-db
     environment:
-      POSTGRES_USER: usergit
+      POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: trips_db
     volumes:

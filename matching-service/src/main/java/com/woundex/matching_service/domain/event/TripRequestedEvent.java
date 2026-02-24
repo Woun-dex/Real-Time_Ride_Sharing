@@ -1,5 +1,24 @@
 package com.woundex.matching_service.domain.event;
 
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+/**
+ * Consumes trip.requested events produced by trip_service.
+ *
+ * trip_service serializes as:
+ * {
+ *   "tripId": "uuid",
+ *   "riderId": "uuid",
+ *   "pickupLocation": { "lat": 40.7, "lng": -74.0 },
+ *   "destination":    { "lat": 40.8, "lng": -73.9 }
+ * }
+ *
+ * We use @JsonProperty setters to unpack the nested objects into flat fields.
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TripRequestedEvent {
     private String tripId;
     private String riderId;
@@ -35,4 +54,22 @@ public class TripRequestedEvent {
 
     public int getLimit() { return limit; }
     public void setLimit(int limit) { this.limit = limit; }
+
+    /** Unpack nested pickupLocation: { "lat": ..., "lng": ... } */
+    @JsonProperty("pickupLocation")
+    public void unpackPickupLocation(Map<String, Double> loc) {
+        if (loc != null) {
+            this.pickupLat = loc.getOrDefault("lat", 0.0);
+            this.pickupLon = loc.getOrDefault("lng", 0.0);
+        }
+    }
+
+    /** Unpack nested destination: { "lat": ..., "lng": ... } */
+    @JsonProperty("destination")
+    public void unpackDestination(Map<String, Double> loc) {
+        if (loc != null) {
+            this.dropoffLat = loc.getOrDefault("lat", 0.0);
+            this.dropoffLon = loc.getOrDefault("lng", 0.0);
+        }
+    }
 }

@@ -22,8 +22,8 @@ public class SessionRegistry {
 
     private static final Logger log = LoggerFactory.getLogger(SessionRegistry.class);
 
-
     private final Map<RiderId, WebSocketSession> sessions = new ConcurrentHashMap<>();
+    private final Map<String, WebSocketSession> tripSessions = new ConcurrentHashMap<>();
     private final ObjectMapper mapper;
 
     public SessionRegistry(ObjectMapper mapper) {
@@ -38,6 +38,13 @@ public class SessionRegistry {
         } else {
             log.warn("Unable to register session {}: missing or invalid riderId attribute", session.getId());
         }
+
+        // Also register by tripId if available (for /ws/track/{tripId})
+        Object tripIdRaw = session.getAttributes().get("tripId");
+        if (tripIdRaw instanceof String && !((String)tripIdRaw).isBlank()) {
+            tripSessions.put((String)tripIdRaw, session);
+            log.debug("Registered session {} for tripId {}", session.getId(), tripIdRaw);
+        }
     }
 
     // unregister by removing any mapping that references this session
@@ -46,6 +53,13 @@ public class SessionRegistry {
             boolean match = e.getValue() != null && e.getValue().getId().equals(session.getId());
             if (match) {
                 log.debug("Unregistered session {} for rider {}", session.getId(), e.getKey());
+            }
+            return match;
+        });
+        tripSessions.entrySet().removeIf(e -> {
+            boolean match = e.getValue() != null && e.getValue().getId().equals(session.getId());
+            if (match) {
+                log.debug("Unregistered session {} for tripId {}", session.getId(), e.getKey());
             }
             return match;
         });
@@ -58,6 +72,23 @@ public class SessionRegistry {
                 session.sendMessage(new TextMessage(mapper.writeValueAsString(msg)));
             } catch (IOException e) {
             }
+        }
+    }
+
+    /**
+     * Push a raw JSON string to the session associated with a tripId.
+     */
+    public void pushByTripId(String tripId, String jsonMessage) {
+        WebSocketSession session = tripSessions.get(tripId);
+        if (session != null && session.isOpen()) {
+            try {
+                session.sendMessage(new TextMessage(jsonMessage));
+                log.debug("Pushed location update for tripId {}", tripId);
+            } catch (IOException e) {
+                log.warn("Failed to push to trip session {}: {}", tripId, e.getMessage());
+            }
+        } else {
+            log.debug("No active session for tripId {}", tripId);
         }
     }
 }

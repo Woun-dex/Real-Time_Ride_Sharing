@@ -13,6 +13,7 @@ import com.woundex.ws_driver_service.application.handler.TripEventHandler;
 import com.woundex.ws_driver_service.domain.event.TripAssignedEvent;
 import com.woundex.ws_driver_service.domain.event.TripLifecycleEvent;
 import com.woundex.ws_driver_service.domain.value_object.TripId;
+import com.woundex.ws_driver_service.messaging.websocket.SessionRegistry;
 
 class TripEventConsumerTest {
 
@@ -20,7 +21,8 @@ class TripEventConsumerTest {
     void consume_delegates_lifecycle_event_to_handler() {
         TripEventHandler handler = mock(TripEventHandler.class);
         ObjectMapper mapper = new ObjectMapper();
-        TripEventConsumer consumer = new TripEventConsumer(handler, mapper);
+        SessionRegistry registry = mock(SessionRegistry.class);
+        TripEventConsumer consumer = new TripEventConsumer(handler, mapper, registry);
 
         String tripId = TripId.generate().toString();
         String json = "{\"tripId\":\"" + tripId + "\"}";
@@ -34,7 +36,8 @@ class TripEventConsumerTest {
     void consumeAssignment_delegates_assigned_event_to_handler() {
         TripEventHandler handler = mock(TripEventHandler.class);
         ObjectMapper mapper = new ObjectMapper();
-        TripEventConsumer consumer = new TripEventConsumer(handler, mapper);
+        SessionRegistry registry = mock(SessionRegistry.class);
+        TripEventConsumer consumer = new TripEventConsumer(handler, mapper, registry);
 
         String tripId = TripId.generate().toString();
         String driverId = UUID.randomUUID().toString();
