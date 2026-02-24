@@ -71,6 +71,8 @@ public class DriverWebSocketHandler extends TextWebSocketHandler {
                     DriverAvailabilityMessage availability = mapper.readValue(payload, DriverAvailabilityMessage.class);
                     availabilityHandler.handle(availability);
                     sendAck(session);
+                } else if (payload.contains("\"PING\"") || payload.contains("\"type\":\"PING\"")) {
+                    sendAck(session);
                 } else {
                     log.warn("Unknown message type from session {}: {}", session.getId(), payload);
                     sendError(session, "unknown_message_type");

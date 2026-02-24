@@ -1,20 +1,43 @@
 package com.woundex.trip_service.api.controller;
 
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import com.woundex.trip_service.application.Commands.TripCommandHandler;
-import com.woundex.trip_service.application.Queries.TripQueryHandler;
-import com.woundex.trip_service.domain.commands.*;
-import com.woundex.trip_service.domain.value_object.*;
-import com.woundex.trip_service.application.dtos.*;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.woundex.trip_service.application.Commands.TripCommandHandler;
+import com.woundex.trip_service.application.Queries.TripQueryHandler;
+import com.woundex.trip_service.application.dtos.AssignDriverRequest;
+import com.woundex.trip_service.application.dtos.CreateTripRequest;
+import com.woundex.trip_service.application.dtos.RateTripRequest;
+import com.woundex.trip_service.application.dtos.TripResponse;
+import com.woundex.trip_service.application.dtos.UpdateStatusRequest;
+import com.woundex.trip_service.domain.commands.AcceptTripCommand;
+import com.woundex.trip_service.domain.commands.AssignDriverCommand;
+import com.woundex.trip_service.domain.commands.CancelTripCommand;
+import com.woundex.trip_service.domain.commands.CompleteTripCommand;
+import com.woundex.trip_service.domain.commands.CreateTripCommand;
+import com.woundex.trip_service.domain.commands.RateTripCommand;
+import com.woundex.trip_service.domain.commands.StartTripCommand;
+import com.woundex.trip_service.domain.commands.UpdateStatusCommand;
+import com.woundex.trip_service.domain.value_object.DriverId;
+import com.woundex.trip_service.domain.value_object.Location;
+import com.woundex.trip_service.domain.value_object.RiderId;
+import com.woundex.trip_service.domain.value_object.TripId;
+import com.woundex.trip_service.domain.value_object.TripStatus;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/trips")
@@ -48,11 +71,11 @@ public class TripController {
     @PostMapping("/{id}/accept")
     public ResponseEntity<?> acceptTrip(
         @PathVariable String id,
-        @Valid @RequestBody AcceptTripRequest request
+        @RequestParam UUID driverId
     ) {
         AcceptTripCommand command = new AcceptTripCommand(
             new TripId(id),
-            new DriverId(request.driverId())
+            new DriverId(driverId)
         );
 
         commandHandler.handle(command);

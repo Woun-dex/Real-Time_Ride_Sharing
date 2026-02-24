@@ -5,6 +5,7 @@ com\woundex\ws_driver_service\WsDriverServiceApplication.class
 com\woundex\ws_driver_service\application\handler\DriverGpsMessageHandler.class
 com\woundex\ws_driver_service\messaging\kafka\DriverLocationProducer.class
 com\woundex\ws_driver_service\config\AsyncConfig.class
+com\woundex\ws_driver_service\messaging\websocket\DriverHandshakeInterceptor.class
 com\woundex\ws_driver_service\messaging\websocket\DriverWebSocketHandler.class
 com\woundex\ws_driver_service\domain\value_object\DriverId.class
 com\woundex\ws_driver_service\application\port\EventPublisher.class

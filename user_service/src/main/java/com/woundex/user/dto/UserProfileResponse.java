@@ -16,4 +16,6 @@ public class UserProfileResponse {
     private String phone;
     private String role;       // RIDER | DRIVER
     private String status;     // ONLINE | OFFLINE (drivers only)
+    private String vehicleInfo;    // Drivers only
+    private String licenseNumber;  // Drivers only
 }

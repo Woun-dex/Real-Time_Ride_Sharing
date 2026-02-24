@@ -9,22 +9,22 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.woundex.ws_rider_service.application.port.PushNotifier;
-import com.woundex.ws_rider_service.domain.Event.RiderLocationUpdatedEvent;
+import com.woundex.ws_rider_service.messaging.websocket.SessionRegistry;
 
 public class DriverLocationConsumerTest {
 
     @Test
-    void onDriverLocation_pushes_to_notifier() {
-        PushNotifier notifier = mock(PushNotifier.class);
+    void onDriverLocation_pushes_to_registry() {
+        SessionRegistry registry = mock(SessionRegistry.class);
         ObjectMapper mapper = new ObjectMapper();
-        DriverLocationConsumer consumer = new DriverLocationConsumer(notifier, mapper);
+        DriverLocationConsumer consumer = new DriverLocationConsumer(registry, mapper);
 
-        String riderId = UUID.randomUUID().toString();
-        String json = "{\"riderId\":\"" + riderId + "\", \"location\":{\"lat\":10,\"lng\":20}}";
+        String driverId = UUID.randomUUID().toString();
+        String tripId = UUID.randomUUID().toString();
+        String json = "{\"driverId\":\"" + driverId + "\", \"lat\":10, \"lon\":20, \"tripId\":\"" + tripId + "\"}";
 
         consumer.onDriverLocation(json);
 
-        verify(notifier, times(1)).pushForDriverLocation(any(RiderLocationUpdatedEvent.class));
+        verify(registry, times(1)).pushByTripId(any(String.class), any(String.class));
     }
 }

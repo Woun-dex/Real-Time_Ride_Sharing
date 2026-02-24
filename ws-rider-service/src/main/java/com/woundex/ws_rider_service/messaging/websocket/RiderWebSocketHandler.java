@@ -55,6 +55,13 @@ public class RiderWebSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) {
         final String payload = message.getPayload();
+        
+        // Skip processing for heartbeat pings
+        if (payload.contains("\"type\":\"PING\"") || payload.contains("\"PING\"")) {
+            sendAck(session);
+            return;
+        }
+
         RiderGpsMessage gps;
         try {
             gps = parse(payload);

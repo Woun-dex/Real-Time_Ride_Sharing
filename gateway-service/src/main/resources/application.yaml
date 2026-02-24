@@ -21,11 +21,10 @@ spring:
       routes:
         # ── User Service ──
         - id: user-service
-          uri: lb://user-service
+          uri: http://localhost:8080
           predicates:
-            - Path=/api/users/**
+            - Path=/api/users/**,/api/auth/**,/api/drivers/status
           filters:
-            - StripPrefix=1
             - name: CircuitBreaker
               args:
                 name: userServiceCB
@@ -33,11 +32,10 @@ spring:
 
         # ── Trip Service ──
         - id: trip-service
-          uri: lb://trip-service
+          uri: http://localhost:8083
           predicates:
             - Path=/api/trips/**
           filters:
-            - StripPrefix=1
             - name: CircuitBreaker
               args:
                 name: tripServiceCB
@@ -45,11 +43,10 @@ spring:
 
         # ── Location Service ──
         - id: location-service
-          uri: lb://location-service
+          uri: http://localhost:8081
           predicates:
-            - Path=/api/locations/**
+            - Path=/api/location/**,/api/drivers/nearby
           filters:
-            - StripPrefix=1
             - name: CircuitBreaker
               args:
                 name: locationServiceCB
@@ -57,11 +54,10 @@ spring:
 
         # ── Matching Service ──
         - id: matching-service
-          uri: lb://matching-service
+          uri: http://localhost:8082
           predicates:
             - Path=/api/matching/**
           filters:
-            - StripPrefix=1
             - name: CircuitBreaker
               args:
                 name: matchingServiceCB
@@ -69,25 +65,21 @@ spring:
 
         # ── WebSocket: Rider ──
         - id: ws-rider-service
-          uri: lb:ws://ws-rider-service
+          uri: ws://localhost:8085
           predicates:
             - Path=/ws/rider/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: wsRiderCB
-                fallbackUri: forward:/fallback/ws-rider-service
+
+        # ── WebSocket: Trip tracking (ws-rider-service) ──
+        - id: ws-track-service
+          uri: ws://localhost:8085
+          predicates:
+            - Path=/ws/track/**
 
         # ── WebSocket: Driver ──
         - id: ws-driver-service
-          uri: lb:ws://ws-driver-service
+          uri: ws://localhost:8084
           predicates:
             - Path=/ws/driver/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: wsDriverCB
-                fallbackUri: forward:/fallback/ws-driver-service
 
       # ── Global CORS ──
       globalcors:
@@ -105,9 +97,10 @@ spring:
             allowCredentials: true
             maxAge: 3600
 
-# ── Eureka ──
+# ── Eureka (disabled – using direct URLs) ──
 eureka:
   client:
+    enabled: false
     service-url:
       defaultZone: http://localhost:8761/eureka/
   instance:

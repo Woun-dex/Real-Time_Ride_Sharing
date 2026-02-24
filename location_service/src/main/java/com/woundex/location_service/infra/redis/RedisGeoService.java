@@ -93,6 +93,26 @@ public class RedisGeoService implements DriverLocationRepository, QueryNearbyDri
     }
 
     /**
+     * Return position from GEO key without requiring an active heartbeat.
+     */
+    public Optional<DriverLocation> findPositionOnly(UUID driverId) {
+        String id = driverId.toString();
+        List<Point> pos = redis.opsForGeo().position(GEO_KEY, id);
+        if (pos == null || pos.isEmpty() || pos.get(0) == null) return Optional.empty();
+        Point p = pos.get(0);
+        // Use heartbeat timestamp if available, otherwise use current time
+        String hbKey = String.format(HEARTBEAT_FMT, id);
+        String tsStr = redis.opsForValue().get(hbKey);
+        long epoch;
+        if (tsStr != null) {
+            try { epoch = Long.parseLong(tsStr); } catch (Exception e) { epoch = Instant.now().toEpochMilli(); }
+        } else {
+            epoch = Instant.now().toEpochMilli();
+        }
+        return Optional.of(new DriverLocation(driverId, new Position(p.getY(), p.getX()), Instant.ofEpochMilli(epoch)));
+    }
+
+    /**
      * Remove GEO members that have no heartbeat key.
      * Runs within a single RedisCallback to minimize roundtrips.
      */

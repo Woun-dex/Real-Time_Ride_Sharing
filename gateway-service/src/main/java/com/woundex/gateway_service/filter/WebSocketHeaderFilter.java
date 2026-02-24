@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+
 import reactor.core.publisher.Mono;
 
 /**
@@ -23,6 +24,11 @@ public class WebSocketHeaderFilter implements GlobalFilter, Ordered {
 
         if ("websocket".equalsIgnoreCase(upgrade)) {
             ServerHttpRequest mutated = request.mutate()
+                    .headers(h -> {
+                        // Remove duplicated forwarded headers before re-adding
+                        h.remove("X-Forwarded-Proto");
+                        h.remove("X-Forwarded-Host");
+                    })
                     .header("X-Forwarded-Proto",
                             request.getURI().getScheme() != null ? request.getURI().getScheme() : "ws")
                     .header("X-Forwarded-Host",
