@@ -27,9 +27,4 @@ cd location_service
 .\mvnw.cmd package
 ```
 
-Notes:
-- Each service is a Maven project located in its respective folder.
-- Tests may be skipped during quick builds using the standard Maven flags.
 
-Contributing
-- Open a PR with a clear description of the change.
